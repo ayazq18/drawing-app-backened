@@ -9,7 +9,7 @@ const serviceAccount = require('./firebase-adminsdk.json');
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://your-project-id.firebaseio.com", 
+  databaseURL: "https://your-project-id.firebaseio.com",
 });
 
 const app = express();
@@ -17,8 +17,8 @@ const server = http.createServer(app);
 
 // Set up CORS middleware with dynamic origin
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.PROD_ORIGIN 
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.PROD_ORIGIN
     : process.env.LOCAL_ORIGIN,
   methods: ['GET', 'POST'],
   credentials: true,
@@ -37,6 +37,8 @@ const io = new Server(server, {
 });
 
 let drawingData = [];
+let undoStack = [];
+let redoStack = [];
 
 io.use(async (socket, next) => {
   const token = socket.handshake.query.token;
@@ -45,7 +47,7 @@ io.use(async (socket, next) => {
     socket.user = decodedToken;
     next();
   } catch (error) {
-    console.error('Invalid token:', error);
+    console.error('Authentication error:', error);
     next(new Error('Authentication error'));
   }
 });
@@ -58,11 +60,38 @@ io.on('connection', (socket) => {
 
   socket.on('drawing-data', (data) => {
     drawingData.push(data);
+    undoStack.push({ action: 'draw', data });
+    redoStack = []; // Clear redo stack on new drawing
     socket.broadcast.emit('drawing-data', data);
+  });
+
+  socket.on('undo', () => {
+    if (undoStack.length > 0) {
+      const lastAction = undoStack.pop();
+      if (lastAction.action === 'draw') {
+        redoStack.push(lastAction);
+        drawingData = drawingData.slice(0, -1); // Remove the last drawing action
+        io.emit('clear-canvas');
+        drawingData.forEach(action => io.emit('drawing-data', action)); // Redraw the remaining data
+      }
+    }
+  });
+
+  socket.on('redo', () => {
+    if (redoStack.length > 0) {
+      const lastAction = redoStack.pop();
+      if (lastAction.action === 'draw') {
+        drawingData.push(lastAction.data);
+        undoStack.push(lastAction);
+        io.emit('drawing-data', lastAction.data);
+      }
+    }
   });
 
   socket.on('clear-canvas', () => {
     drawingData = [];
+    undoStack = [];
+    redoStack = [];
     io.emit('clear-canvas');
   });
 
