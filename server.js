@@ -9,22 +9,23 @@ const serviceAccount = require('./firebase-adminsdk.json');
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://your-project-id.firebaseio.com", // Replace with your project ID
+  databaseURL: "https://your-project-id.firebaseio.com", 
 });
 
 const app = express();
 const server = http.createServer(app);
 app.use(cors());
 
-const io = new Server(server 
-//   {
-//   cors: {
-//     origin: process.env.NODE_ENV === 'production' 
-//       ? process.env.PROD_ORIGIN 
-//       : process.env.LOCAL_ORIGIN,
-//     methods: ['GET', 'POST'],
-//   },
-// }
+const io = new Server(server, 
+  {
+  cors: {
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.PROD_ORIGIN 
+      : process.env.LOCAL_ORIGIN,
+    methods: ['GET', 'POST'],
+    credentials: true, // Allow credentials (like cookies)
+  },
+}
 );
 
 let drawingData = [];
