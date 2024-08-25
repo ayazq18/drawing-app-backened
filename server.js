@@ -3,47 +3,60 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebase-adminsdk.json');
 
-// Initialize Express app and HTTP server
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://your-project-id.firebaseio.com", // Replace with your project ID
+});
+
 const app = express();
 const server = http.createServer(app);
 app.use(cors());
 
 const io = new Server(server, {
   cors: {
-    // origin: 'http://localhost:5173',
     origin: process.env.NODE_ENV === 'production' 
-            ? process.env.PROD_ORIGIN 
-            : process.env.LOCAL_ORIGIN,
+      ? process.env.PROD_ORIGIN 
+      : process.env.LOCAL_ORIGIN,
     methods: ['GET', 'POST'],
   },
 });
 
-console.log(process.env.PROD_ORIGIN )
+let drawingData = [];
 
-let drawingData = [];  // Array to store the drawing data
+io.use(async (socket, next) => {
+  const token = socket.handshake.query.token;
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    socket.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Invalid token:', error);
+    next(new Error('Authentication error'));
+  }
+});
 
 io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  console.log(`User connected: ${socket.user.uid}`);
 
-  // Send the stored drawing data to the newly connected user
+  // Send the current drawing data to the newly connected client
   socket.emit('init-drawing-data', drawingData);
 
-  // Handle incoming drawing data
   socket.on('drawing-data', (data) => {
-    drawingData.push(data);  // Store the drawing data
+    drawingData.push(data);
     socket.broadcast.emit('drawing-data', data);
   });
 
-  // Handle clear canvas request
   socket.on('clear-canvas', () => {
-    drawingData = [];  // Clear the stored data
-    io.emit('clear-canvas');  // Broadcast to all clients
+    drawingData = [];
+    io.emit('clear-canvas');
   });
 
-  // Handle user disconnects
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+    console.log(`User disconnected: ${socket.user.uid}`);
   });
 });
 
