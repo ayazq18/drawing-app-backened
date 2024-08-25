@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "build": "webpack --mode production"
+    "build": "echo 'No build step required for raw Node.js'"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +17,10 @@
     "express": "^4.19.2",
     "firebase-admin": "^12.4.0",
     "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
   }
 }
