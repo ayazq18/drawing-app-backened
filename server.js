@@ -14,17 +14,22 @@ admin.initializeApp({
 
 const app = express();
 const server = http.createServer(app);
-app.use(cors());
 
+// Set up CORS middleware with dynamic origin
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.PROD_ORIGIN 
     : process.env.LOCAL_ORIGIN,
   methods: ['GET', 'POST'],
-  credentials: true, // Allow credentials (like cookies)
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
+
+// Add a basic route to handle root requests
+app.get('/', (req, res) => {
+  res.send('Drawing App Backend is running.');
+});
 
 const io = new Server(server, {
   cors: corsOptions,
