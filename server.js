@@ -19,6 +19,8 @@ const io = new Server(server, {
   },
 });
 
+console.log(process.env.PROD_ORIGIN )
+
 let drawingData = [];  // Array to store the drawing data
 
 io.on('connection', (socket) => {
