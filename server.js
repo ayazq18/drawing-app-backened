@@ -16,17 +16,19 @@ const app = express();
 const server = http.createServer(app);
 app.use(cors());
 
-const io = new Server(server, 
-  {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? process.env.PROD_ORIGIN 
-      : process.env.LOCAL_ORIGIN,
-    methods: ['GET', 'POST'],
-    credentials: true, // Allow credentials (like cookies)
-  },
-}
-);
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.PROD_ORIGIN 
+    : process.env.LOCAL_ORIGIN,
+  methods: ['GET', 'POST'],
+  credentials: true, // Allow credentials (like cookies)
+};
+
+app.use(cors(corsOptions));
+
+const io = new Server(server, {
+  cors: corsOptions,
+});
 
 let drawingData = [];
 
