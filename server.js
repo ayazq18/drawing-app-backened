@@ -16,15 +16,15 @@ const app = express();
 const server = http.createServer(app);
 app.use(cors());
 
-const io = new Server(server, 
-  {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? process.env.PROD_ORIGIN 
-      : process.env.LOCAL_ORIGIN,
-    methods: ['GET', 'POST'],
-  },
-}
+const io = new Server(server 
+//   {
+//   cors: {
+//     origin: process.env.NODE_ENV === 'production' 
+//       ? process.env.PROD_ORIGIN 
+//       : process.env.LOCAL_ORIGIN,
+//     methods: ['GET', 'POST'],
+//   },
+// }
 );
 
 let drawingData = [];
