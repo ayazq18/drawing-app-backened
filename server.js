@@ -31,7 +31,6 @@ const corsOptions = {
   methods: ['GET', 'POST'],
   credentials: true,
 };
-console.log('CORS Options:', corsOptions);
 
 app.use(cors(corsOptions));
 
@@ -39,6 +38,8 @@ app.use(cors(corsOptions));
 app.get('/', (req, res) => {
   res.send('Drawing App Backend is running.');
 });
+
+const connectedUserIds = new Set();
 
 const io = new Server(server, {
   cors: {
@@ -78,7 +79,9 @@ io.use(async (socket, next) => {
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.user.uid}`);
-
+  connectedUserIds.add(socket.user.uid);
+  io.emit('user-count', connectedUserIds.size);
+  console.log(connectedUserIds)
   // Send the current drawing data to the newly connected client
   socket.emit('init-drawing-data', drawingData);
 
@@ -120,6 +123,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    connectedUserIds.delete(socket.user.uid);
+    io.emit('user-count', connectedUserIds.size);
     console.log(`User disconnected: ${socket.user.uid}`);
   });
 });
