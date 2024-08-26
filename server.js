@@ -17,13 +17,20 @@ const server = http.createServer(app);
 
 // Set up CORS middleware with dynamic origin
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? 'https://drawing-app-cyan.vercel.app/drawing-pad'
-    : 'http://localhost:5173',
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://drawing-app-cyan.vercel.app',
+      'http://localhost:5000'
+    ];
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST'],
   credentials: true,
 };
-
 console.log('CORS Options:', corsOptions);
 
 app.use(cors(corsOptions));
@@ -34,9 +41,24 @@ app.get('/', (req, res) => {
 });
 
 const io = new Server(server, {
-  cors: corsOptions,
+  cors: {
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://drawing-app-cyan.vercel.app',
+        'http://localhost:5000'
+      ];
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
   path: '/socket.io/',
 });
+
 
 let drawingData = [];
 let undoStack = [];
