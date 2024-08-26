@@ -18,11 +18,13 @@ const server = http.createServer(app);
 // Set up CORS middleware with dynamic origin
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
-    ? process.env.PROD_ORIGIN
-    : process.env.LOCAL_ORIGIN,
+    ? process.env.PROD_ORIGIN || "https://drawing-app-ayazq18s-projects.vercel.app/"
+    : process.env.LOCAL_ORIGIN || "http://localhost:5173",
   methods: ['GET', 'POST'],
   credentials: true,
 };
+
+console.log('CORS Options:', corsOptions);
 
 app.use(cors(corsOptions));
 
