@@ -20,7 +20,7 @@ const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
       'https://drawing-app-cyan.vercel.app',
-      'http://localhost:5000'
+      'http://localhost:5173'
     ];
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -45,7 +45,7 @@ const io = new Server(server, {
     origin: (origin, callback) => {
       const allowedOrigins = [
         'https://drawing-app-cyan.vercel.app',
-        'http://localhost:5000'
+        'http://localhost:5173'
       ];
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
